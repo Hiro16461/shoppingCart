@@ -1,121 +1,89 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { Link, Outlet } from 'react-router';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+	const [items, setItems] = useState(null);
+	const [error, setError] = useState(null);
+	const [loading, setLoading] = useState(true);
+	const [count, setCount] = useState({});
+	const [cart, setCart] = useState({});
+	const [totalQty, setTotalQty] = useState(0);
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+	useEffect(() => {
+		fetch('https://fakestoreapi.com/products')
+			.then((response) => {
+				if (response.status >= 400) {
+					throw Error('Server Error');
+				}
+				return response.json();
+			})
+			.then((items) => {
+				setItems(items);
+			})
+			.catch((error) => setError(error))
+			.finally(() => setLoading(false));
+	}, []);
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+	return (
+		<>
+			<header>
+				<p className='logo'>
+					<span className='logoLetters'>F</span>ake
+					<span className='logoLetters'>S</span>hop
+				</p>
+				<nav>
+					<ul>
+						<li>
+							<Link to='home' className='headerList'>
+								Home
+							</Link>
+						</li>
+						<li>
+							<Link to='shop' className='headerList'>
+								Shop
+							</Link>
+						</li>
+						<li>
+							<Link to='cart' className='headerList'>
+								<span className='base'>
+									Cart <span className='cartQty'>{totalQty}</span>
+								</span>
+							</Link>
+						</li>
+					</ul>
+				</nav>
+			</header>
+			<main className='content'>
+				{loading && (
+					<p className='loading'>
+						Loading{' '}
+						<span className='dots'>
+							<span>.</span>
+							<span>.</span>
+							<span>.</span>
+						</span>
+					</p>
+				)}
+				{error && (
+					<p className='error'>Hmm! We've encountered a network error</p>
+				)}
+				{!loading && !error && (
+					<Outlet
+						context={{
+							items,
+							count,
+							setCount,
+							cart,
+							setCart,
+							totalQty,
+							setTotalQty,
+						}}
+					/>
+				)}
+			</main>
+		</>
+	);
 }
 
-export default App
+export default App;
